@@ -1,2 +1,20 @@
-lift
+/lift
+/lift.zip
+/lift-*.tgz
+/lift-*.zip
 
+# coverage artifacts
+/coverage.txt
+
+# Eclipe artifacts
+.project
+.settings
+
+# IntelliJ artifacts
+.idea
+
+# Visual Studio Code artifacts
+.vscode
+
+#macos index
+.DS_Store

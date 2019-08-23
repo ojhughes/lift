@@ -1,7 +1,17 @@
 ## To Build
 
 ```
-go build
+make
+```
+
+## To test
+```
+make test
+```
+
+## To build multi platform release binaries
+```
+make release
 ```
 
 ## To run

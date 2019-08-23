@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var listCmd = &cobra.Command{
