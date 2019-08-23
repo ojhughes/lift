@@ -4,7 +4,7 @@ GOBIN ?= $(shell go env GOPATH)/bin
 VERSION ?= $(shell cat VERSION)
 
 .PHONY: all
-all: build test verify-goimports ## Build, test, verify source formatting and regenerate docs
+all: build test verify-goimports verify-gofmt ## Build, test, verify source formatting and regenerate docs
 
 .PHONY: clean
 clean: ## Delete build output
@@ -34,11 +34,24 @@ check-goimports: ## Checks if goimports is installed
 
 .PHONY: goimports
 goimports: check-goimports ## Runs goimports on the project
-	@goimports -w cmd
+	@goimports -w cmd pkg
 
 .PHONY: verify-goimports
 verify-goimports: check-goimports ## Verifies if all source files are formatted correctly
-	@goimports -l cmd | (! grep .) || (echo above files are not formatted correctly. please run \"make goimports\" && false)
+	@goimports -l cmd pkg | (! grep .) || (echo above files are not formatted correctly. please run \"make goimports\" && false)
+
+.PHONY: verify-gofmt
+verify-gofmt: ## Check the file format
+	@gofmt -e -d cmd pkg | read; \
+		if [ $$? == 0 ]; then \
+			echo "gofmt check failed:"; \
+			gofmt -e -d cmd pkg; \
+			exit 1; \
+		fi
+
+.PHONY: gofmt
+gofmt: ## run gofmt tool on sources
+	@gofmt -l -w $(GO_SOURCES)
 
 $(OUTPUT): $(GO_SOURCES) VERSION
 	go build -o $(OUTPUT) .
