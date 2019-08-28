@@ -1,0 +1,48 @@
+jobs:
+- job: unit
+  strategy:
+    matrix:
+      linux:
+        imageName: 'ubuntu-18.04'
+      mac:
+        imageName: 'macos-10.13'
+      windows:
+        imageName: 'windows-2019'
+  pool:
+    vmImage: $(imageName)
+  variables:
+    GOBIN:  '$(GOPATH)/bin' # Go binaries path
+    GOROOT: '/opt/hostedtoolcache/go/1.12.6/x64' # Go installation path
+    GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+    modulePath: '$(build.repository.name)' # Path to the module's code
+    
+  steps:
+  - task: GoTool@0
+    inputs:
+      version: 1.12.6
+
+  - bash: |
+      mkdir -p '$(GOBIN)'
+      mkdir -p '$(GOPATH)/pkg'
+      mkdir -p '$(modulePath)'
+      shopt -s extglob
+      shopt -s dotglob
+      mv !(gopath) '$(modulePath)'
+      echo '##vso[task.prependpath]$(GOBIN)'
+      echo '##vso[task.prependpath]$(GOROOT)/bin'
+      displayName: 'Set up the Go workspace'
+
+  - bash: |
+      go get golang.org/x/tools/cmd/goimports
+      make verify-goimports
+    workingDirectory: '$(modulePath)'
+    displayName: 'check formatting'
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
+
+  - bash: make build coverage
+    workingDirectory: '$(modulePath)'
+    displayName: 'Run unit test'
+
+  - bash: bash <(curl -s https://codecov.io/bash)
+    workingDirectory: '$(modulePath)'
+    displayName: 'Report coverage'
